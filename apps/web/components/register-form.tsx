@@ -1,0 +1,8 @@
+'use client';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { FormEvent, useState } from 'react';
+export function RegisterForm() { const router=useRouter(); const [error,setError]=useState(''); const [loading,setLoading]=useState(false);
+ async function submit(event:FormEvent<HTMLFormElement>) {event.preventDefault();setLoading(true);setError('');const body=Object.fromEntries(new FormData(event.currentTarget).entries());const response=await fetch('/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});if(response.ok){router.push('/cuenta');router.refresh();}else{const data=await response.json();setError(data.message ?? 'No fue posible crear la cuenta.');setLoading(false);}}
+ return <form className="form-card" onSubmit={submit}><span className="eyebrow">Nueva cuenta</span><h1>Regístrate</h1>{error && <p className="alert error">{error}</p>}<div className="form-grid"><div className="field full"><label>Nombre completo</label><input name="name" required minLength={2}/></div><div className="field"><label>Correo</label><input name="email" type="email" required/></div><div className="field"><label>Teléfono</label><input name="phone"/></div><div className="field full"><label>Contraseña</label><input name="password" type="password" minLength={8} required/></div></div><button className="btn-primary" style={{width:'100%',marginTop:24}} disabled={loading}>{loading?'Creando cuenta…':'Crear cuenta'}</button><p className="auth-foot">¿Ya tienes cuenta? <Link className="link-arrow" href="/login">Inicia sesión</Link></p></form>;
+}

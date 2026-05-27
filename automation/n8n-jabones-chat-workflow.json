@@ -1,0 +1,83 @@
+{
+  "name": "CocoEsencia - Chat de atención demostrativo",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cocoesencia-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "7a12d178-8eea-4a98-ace0-7e714117349a",
+      "name": "Webhook Chat",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        260,
+        300
+      ],
+      "webhookId": "cocoesencia-chat"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json.body ?? $json;\nconst text = String(input.message ?? '').toLowerCase();\nlet output = '¡Hola! Soy el asistente de CocoEsencia. Puedo orientarte sobre jabones, pagos y rastreo.';\nif (text.includes('pse') || text.includes('tarjeta') || text.includes('pago')) output = 'Puedes pagar con tarjeta o PSE mediante nuestra ventana segura de Wompi. La tienda no almacena tus datos financieros.';\nif (text.includes('rastre') || text.includes('pedido')) output = 'Para rastrear tu pedido, ingresa el código COCO- recibido después de la compra en la sección Rastreo.';\nif (text.includes('coco') || text.includes('ingrediente')) output = 'Nuestras fórmulas iniciales tienen aceite de coco como base. Consulta los ingredientes en la ficha de cada producto.';\nreturn [{ json: { output } }];"
+      },
+      "id": "57f8a499-5046-4614-89f8-3f4f1d231cd2",
+      "name": "Responder consulta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { output: $json.output } }}",
+        "options": {}
+      },
+      "id": "90b075ae-b8c0-4e80-903c-7a71fdc00615",
+      "name": "Respuesta HTTP",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        740,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook Chat": {
+      "main": [
+        [
+          {
+            "node": "Responder consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Responder consulta": {
+      "main": [
+        [
+          {
+            "node": "Respuesta HTTP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "13b29e33-bebd-4bd0-ad0f-671c6f0e6fc2",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

@@ -1,0 +1,9 @@
+'use client';
+import { FormEvent, useState } from 'react';
+import { date, orderStatus } from '@/lib/format';
+import { ShipmentEvent } from '@/lib/types';
+interface Tracking { trackingCode: string; status: string; createdAt: string; shipmentEvents: ShipmentEvent[]; }
+export function TrackingForm({ initialCode = '' }: { initialCode?: string }) { const [code, setCode] = useState(initialCode); const [result, setResult] = useState<Tracking>(); const [error, setError] = useState(''); const [loading, setLoading] = useState(false);
+ async function submit(e: FormEvent) { e.preventDefault(); setError(''); setLoading(true); const response = await fetch(`/api/backend/orders/tracking/${encodeURIComponent(code.trim())}`); if (response.ok) setResult(await response.json()); else { setResult(undefined); setError('No encontramos un pedido con ese código.'); } setLoading(false); }
+ return <div className="tracking-box"><form className="form-card" onSubmit={submit}><div className="field"><label>Código de rastreo</label><div className="button-row"><input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="COCO-XXXXXXXXXX" required style={{ flex: 1 }} /><button className="btn-primary" disabled={loading}>{loading ? 'Consultando…' : 'Rastrear'}</button></div></div>{error && <p className="alert error">{error}</p>}</form>{result && <div className="form-card" style={{ marginTop: 20 }}><div className="order-head"><div><small>{result.trackingCode}</small><h2 style={{ margin: '8px 0', fontFamily: 'Georgia,serif' }}>Estado del envío</h2></div><span className="status">{orderStatus(result.status)}</span></div><div className="timeline">{result.shipmentEvents.map((event) => <article key={event.id}><h4>{event.title}</h4><p>{event.description}{event.location ? ` · ${event.location}` : ''}</p><p>{date(event.occurredAt)}</p></article>)}</div></div>}</div>;
+}

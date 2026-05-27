@@ -1,0 +1,120 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: jabones_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-jabones}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jabones_seguro_cambiar}
+      POSTGRES_DB: ${POSTGRES_DB:-jabones_db}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-jabones} -d ${POSTGRES_DB:-jabones_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [jabones_net]
+
+  minio:
+    image: minio/minio:latest
+    container_name: jabones_minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin123}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio_data:/data
+    networks: [jabones_net]
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: jabones_api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://jabones:jabones_seguro_cambiar@postgres:5432/jabones_db}
+      PORT: 4000
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      SEED_DATABASE: ${SEED_DATABASE:-true}
+      DATABASE_SSL: ${DATABASE_SSL:-false}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio}
+      MINIO_PORT: ${MINIO_PORT:-9000}
+      MINIO_USE_SSL: ${MINIO_USE_SSL:-false}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-minioadmin123}
+      MINIO_BUCKET: ${MINIO_BUCKET:-cocoesencia-files}
+      MINIO_REGION: ${MINIO_REGION:-us-east-1}
+      MINIO_AUTO_CREATE_BUCKET: ${MINIO_AUTO_CREATE_BUCKET:-true}
+      MINIO_MAX_FILE_SIZE_MB: ${MINIO_MAX_FILE_SIZE_MB:-25}
+      MINIO_PUBLIC_BASE_URL: ${MINIO_PUBLIC_BASE_URL:-http://localhost:3001/api/backend/files/public}
+    ports:
+      - "${API_PUBLIC_PORT:-4001}:4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/api/v1/health >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [jabones_net]
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3001}
+    container_name: jabones_web
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: 3000
+      API_INTERNAL_URL: http://api:4000/api/v1
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3001}
+    ports:
+      - "${WEB_PUBLIC_PORT:-3001}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [jabones_net]
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: jabones_n8n
+    profiles: ["automation"]
+    restart: unless-stopped
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: ${N8N_BASIC_AUTH_ACTIVE:-true}
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:-admin}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD:-cambiar-clave-n8n}
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY:-cambiar-por-clave-segura-n8n}
+      N8N_HOST: localhost
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      WEBHOOK_URL: http://localhost:5678/
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks: [jabones_net]
+
+volumes:
+  postgres_data:
+  minio_data:
+  n8n_data:
+
+networks:
+  jabones_net:
+    driver: bridge
