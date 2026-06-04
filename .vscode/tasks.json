@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "docker: postgres + minio",
+      "type": "shell",
+      "command": "docker compose up -d --wait postgres minio",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "env": {
+          "POSTGRES_PORT": "5433",
+          "MINIO_API_PORT": "9000",
+          "MINIO_CONSOLE_PORT": "9001"
+        }
+      },
+      "problemMatcher": []
+    }
+  ]
+}

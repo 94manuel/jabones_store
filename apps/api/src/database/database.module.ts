@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { entities } from './entities.registry';
 import { InitialSchema1716500000000 } from './migrations/1716500000000-initial-schema';
+import { AddSiteVisits1717000000000 } from './migrations/1717000000000-add-site-visits';
 import { SeedService } from './seed.service';
 
 @Global()
@@ -14,7 +15,7 @@ import { SeedService } from './seed.service';
         type: 'postgres',
         url: config.getOrThrow<string>('DATABASE_URL'),
         entities,
-        migrations: [InitialSchema1716500000000],
+        migrations: [InitialSchema1716500000000, AddSiteVisits1717000000000],
         migrationsRun: true,
         synchronize: false,
         ssl: config.get<string>('DATABASE_SSL', 'false') === 'true' ? { rejectUnauthorized: false } : false,

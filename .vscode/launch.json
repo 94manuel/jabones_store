@@ -1,0 +1,42 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "F5: CocoEsencia dev full stack",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run dev",
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "docker: postgres + minio",
+      "env": {
+        "NODE_ENV": "development",
+        "PORT": "4000",
+        "DATABASE_URL": "postgresql://jabones:jabones_seguro_cambiar@localhost:5433/jabones_db",
+        "DATABASE_SSL": "false",
+        "JWT_SECRET": "desarrollo-local-cocoesencia-cambiar-antes-de-produccion",
+        "JWT_EXPIRES_IN": "1d",
+        "FRONTEND_URL": "http://localhost:3000",
+        "API_INTERNAL_URL": "http://localhost:4000/api/v1",
+        "NEXT_PUBLIC_SITE_URL": "http://localhost:3000",
+        "SEED_DATABASE": "true",
+        "ADMIN_EMAIL": "admin@cocoessencia.co",
+        "ADMIN_PASSWORD": "Admin123!",
+        "MINIO_ENDPOINT": "localhost",
+        "MINIO_PORT": "9000",
+        "MINIO_USE_SSL": "false",
+        "MINIO_ACCESS_KEY": "minioadmin",
+        "MINIO_SECRET_KEY": "minioadmin123",
+        "MINIO_BUCKET": "cocoesencia-files",
+        "MINIO_REGION": "us-east-1",
+        "MINIO_AUTO_CREATE_BUCKET": "true",
+        "MINIO_MAX_FILE_SIZE_MB": "25",
+        "MINIO_PUBLIC_BASE_URL": "http://localhost:3000/api/backend/files/public",
+        "WOMPI_PUBLIC_KEY": "pub_test_REEMPLAZAR_LLAVE_PUBLICA",
+        "WOMPI_INTEGRITY_SECRET": "test_integrity_REEMPLAZAR_SECRETO_INTEGRIDAD",
+        "WOMPI_EVENTS_SECRET": "test_events_REEMPLAZAR_SECRETO_EVENTOS",
+        "N8N_CHAT_WEBHOOK_URL": "",
+        "N8N_WEBHOOK_AUTH_TOKEN": ""
+      }
+    }
+  ]
+}

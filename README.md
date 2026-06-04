@@ -122,6 +122,8 @@ npm run dev
 
 Ajuste `DATABASE_URL` a `localhost:5433`, `API_INTERNAL_URL=http://localhost:4000/api/v1`, `FRONTEND_URL=http://localhost:3000` y `NEXT_PUBLIC_SITE_URL=http://localhost:3000` cuando ejecute API y web fuera de contenedores.
 
+En VS Code tambien puede presionar F5 y elegir **F5: CocoEsencia dev full stack**. Esa configuracion levanta Postgres y MinIO con Docker Compose, inyecta las variables locales necesarias y ejecuta API + web con el depurador de JavaScript habilitado.
+
 Si ejecuta MinIO fuera de Docker Compose, cambie tambien `MINIO_ENDPOINT`, `MINIO_PORT`, `MINIO_USE_SSL` y `MINIO_PUBLIC_BASE_URL` para que apunten a su instancia local o remota.
 
 ## Endpoints principales

@@ -6,5 +6,6 @@ export * from './order-item.entity';
 export * from './order.entity';
 export * from './payment.entity';
 export * from './product.entity';
+export * from './site-visit.entity';
 export * from './shipment-event.entity';
 export * from './user.entity';

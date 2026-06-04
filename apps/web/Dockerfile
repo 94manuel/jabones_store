@@ -1,4 +1,4 @@
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 COPY .npmrc ./
@@ -11,7 +11,7 @@ ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 ENV API_INTERNAL_URL=http://api:4000/api/v1
 RUN npm run build -w apps/web
 
-FROM node:22-alpine AS production
+FROM node:24-alpine AS production
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000

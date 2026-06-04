@@ -2,12 +2,12 @@ import { redirect } from 'next/navigation';
 import { AdminPanel } from '@/components/admin-panel';
 import { cop } from '@/lib/format';
 import { serverApi, viewer } from '@/lib/server-api';
-import { Order, Product, StoredFile } from '@/lib/types';
+import { Order, Product, SiteVisit, StoredFile } from '@/lib/types';
 
 export const metadata = { title: 'Administración' };
 export const dynamic = 'force-dynamic';
 
-interface Summary { products: number; users: number; orders: number; pendingOrders: number; contacts: number; revenue: number; }
+interface Summary { products: number; users: number; orders: number; pendingOrders: number; contacts: number; revenue: number; visits: number; visitsToday: number; }
 interface Contact { id: string; name: string; email: string; subject: string; createdAt: string; }
 
 export default async function AdminPage() {
@@ -15,7 +15,7 @@ export default async function AdminPage() {
 	if (!current) redirect('/login?next=/admin');
 	if (current.role !== 'ADMIN') redirect('/cuenta');
 
-	let data: [Summary, Product[], Order[], Contact[], StoredFile[]];
+	let data: [Summary, Product[], Order[], Contact[], StoredFile[], SiteVisit[]];
 	try {
 		data = await Promise.all([
 			serverApi<Summary>('/admin/summary', {}, true),
@@ -23,18 +23,20 @@ export default async function AdminPage() {
 			serverApi<Order[]>('/orders/admin/all', {}, true),
 			serverApi<Contact[]>('/contact', {}, true),
 			serverApi<StoredFile[]>('/files/admin?limit=20', {}, true),
+			serverApi<SiteVisit[]>('/admin/visits?limit=30', {}, true),
 		]);
 	} catch {
 		redirect('/cuenta');
 	}
 
-	const [summary, products, orders, contacts, files] = data;
+	const [summary, products, orders, contacts, files, visits] = data;
 
 	return (
 		<div className="container admin-layout">
 			<aside className="admin-nav">
 				<h3>CocoEsencia Admin</h3>
 				<a href="#dashboard">Dashboard</a>
+				<a href="#visitas">Visitas</a>
 				<a href="#archivos">Archivos</a>
 				<a href="#productos">Productos</a>
 				<a href="#pedidos">Pedidos</a>
@@ -54,8 +56,10 @@ export default async function AdminPage() {
 					<div className="metric"><span>Pedidos</span><strong>{summary.orders}</strong></div>
 					<div className="metric"><span>Por despachar</span><strong>{summary.pendingOrders}</strong></div>
 					<div className="metric"><span>Ventas aprobadas</span><strong>{cop(summary.revenue)}</strong></div>
+					<div className="metric"><span>Visitas</span><strong>{summary.visits}</strong></div>
+					<div className="metric"><span>Visitas hoy</span><strong>{summary.visitsToday}</strong></div>
 				</div>
-				<AdminPanel initialProducts={products} initialOrders={orders} contacts={contacts} initialFiles={files} />
+				<AdminPanel initialProducts={products} initialOrders={orders} contacts={contacts} initialFiles={files} visits={visits} />
 			</div>
 		</div>
 	);

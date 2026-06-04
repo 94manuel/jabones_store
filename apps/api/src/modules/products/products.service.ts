@@ -22,6 +22,10 @@ export class ProductsService {
   }
   async update(id: string, dto: UpdateProductDto) {
     const product = await this.ensure(id);
+    if (dto.slug && dto.slug !== product.slug) {
+      const existing = await this.products.findOne({ where: { slug: dto.slug } });
+      if (existing) throw new ConflictException('Ya existe un producto con ese slug.');
+    }
     Object.assign(product, dto);
     return this.products.save(product);
   }
